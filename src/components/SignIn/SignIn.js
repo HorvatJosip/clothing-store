@@ -64,7 +64,11 @@ class SignIn extends Component {
 
           <div className='buttons'>
             <FlatButton type='submit'>Sign In</FlatButton>
-            <FlatButton onClick={signInWithGoogle} isGoogleSignIn={true}>
+            <FlatButton
+              type='button'
+              onClick={signInWithGoogle}
+              isGoogleSignIn={true}
+            >
               Sign In with Google
             </FlatButton>
           </div>
