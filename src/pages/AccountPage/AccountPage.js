@@ -1,7 +1,7 @@
 import React from 'react';
 
 import SignIn from '../../components/SignIn/SignIn';
-import SignOut from '../../components/SignOut/SignOut';
+import SignOut from '../../components/SignUp/SignUp';
 
 import './AccountPage.scss';
 
