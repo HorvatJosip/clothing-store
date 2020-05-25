@@ -2,9 +2,11 @@ import React from 'react';
 
 import './FlatButton.scss';
 
-const FlatButton = ({ children, isGoogleSignIn, ...otherProps }) => (
+const FlatButton = ({ children, isGoogleSignIn, inverted, ...otherProps }) => (
   <button
-    className={`${isGoogleSignIn ? 'google-sign-in' : ''} flat-button`}
+    className={`${inverted ? 'inverted' : ''} ${
+      isGoogleSignIn ? 'google-sign-in' : ''
+    } flat-button`}
     {...otherProps}
   >
     {children}
