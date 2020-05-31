@@ -1,10 +1,10 @@
 export const setCurrentUser = user => ({
-  type: NAMES.setCurrentUser,
+  type: NAMES.SET_CURRENT_USER,
   payload: user,
 });
 
 const NAMES = {
-  setCurrentUser: 'SET_CURRENT_USER',
+  SET_CURRENT_USER: 'SET_CURRENT_USER',
 };
 
 export default NAMES;

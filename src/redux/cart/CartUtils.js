@@ -1,10 +1,20 @@
 export const addItemToCart = (cartItems, newItem) => {
-  const existingCartItem = cartItems[newItem.id];
+  const newCartState = [];
+  let found = false;
 
-  cartItems[newItem.id] = {
-    item: newItem,
-    quantity: existingCartItem?.quantity + 1 || 1,
-  };
+  cartItems.forEach(cartItem => {
+    if (cartItem.id === newItem.id) {
+      found = true;
+      cartItem.quantity++;
+    }
 
-  return cartItems;
+    newCartState.push(cartItem);
+  });
+
+  if (!found) {
+    newItem.quantity = 1;
+    newCartState.push(newItem);
+  }
+
+  return newCartState;
 };

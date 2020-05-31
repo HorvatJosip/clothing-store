@@ -1,15 +1,15 @@
 export const toggleCartVisibility = () => ({
-  type: NAMES.toggleCartVisibility,
+  type: NAMES.TOGGLE_CART_VISIBILITY,
 });
 
 export const addItem = item => ({
-  type: NAMES.addItem,
+  type: NAMES.ADD_ITEM,
   payload: item,
 });
 
 const NAMES = {
-  toggleCartVisibility: 'TOGGLE_CART_VISIBILITY',
-  addItem: 'ADD_ITEM',
+  TOGGLE_CART_VISIBILITY: 'TOGGLE_CART_VISIBILITY',
+  ADD_ITEM: 'ADD_ITEM',
 };
 
 export default NAMES;
