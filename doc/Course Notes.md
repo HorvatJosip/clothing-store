@@ -11,9 +11,9 @@ if you run a script with yarn, it will check if it has same one with 'pre' befor
 `yarn add gh-pages`
 Add the following to `package.json`:
 
-``` jso
+``` json
 "homepage": "[https://.github.io/.github.io/ Name>",
-. . .
+// . . .
 "scripts": {
     "predeploy": "yarn build",
     "deploy": "gh-pages -d build"
@@ -140,7 +140,7 @@ export default firebase;
 
 ``` react
 import { signInWithGoogle } from '../../firebase/firebaseUtils';
-. . .
+// . . .
 render()
 (
     <FlatButton onClick={signInWithGoogle}>
@@ -153,7 +153,7 @@ render()
 
 ``` react
 import { auth } from '../../firebase/firebaseUtils';
-. . .
+// . . .
 unsubscribeFromAuth = null;
 
 componentDidMount() {
@@ -307,7 +307,7 @@ Similarly like we wrapped the `App` component with the `BrowserRouter` inside `i
 import { Provider } from 'react-redux';
 import ReduxStore from './redux/Store';
 
-. . .
+// . . .
 
 (
     <Provider store={ReduxStore}>
@@ -431,7 +431,7 @@ And now, to use it, we just import it and use it by passing in the state:
 ``` react
 import { selectCartItemsCount } from '../../redux/cart/CartSelectors';
 
-. . .
+// . . .
 
 const mapStateToProps = state => ({
   itemCount: selectCartItemsCount(state),
@@ -457,6 +457,81 @@ const mapStateToProps = createStructuredSelector({
 ```
 
 And this is the way we should use it always, even if we have only one selector. This is future proof.
+
+## Redux persist
+
+`yarn add redux-persist`
+
+After we create a store in `Store.js`, we need to give it to `redux-persist` and then export the `persistor`:
+
+``` react
+// . . .
+
+const store = createStore(RootReducer, applyMiddleware(...middlewares));
+
+const persistor = persistStore(store);
+
+export default { store, persistor };
+```
+
+Next, inside the `RootReducer.js` file, we need to add persistence as well: 
+
+``` react
+import { persistReducer } from 'redux-persist';
+// use localStorage
+import storage from 'redux-persist/lib/storage';
+// OR...
+// use sessionStorage
+import storage from 'redux-persist/lib/storage/session';
+```
+
+After that, we have to define the config which consists of the following:
+
+* `key` - at what point of our reducer do we want to start storing everything (from which reducer - 'root' will apply it to root reducer which will in turn apply it to all reducers)
+* `storage` - what type of storage we want to use - here we pass in the imported storage defined in previous step
+* `whitelist` - names of reducers we want to store
+  * For example, we want to persist the cart reducer because we are handling it. The user reducer can stay intact because it is being handled by Firebase.
+
+Now we are able to use the persistence by modifying the store logic slightly:
+
+``` react
+const persistConfig = {
+  key: 'root',
+  storage,
+  whitelist: ['cart'],
+};
+
+const rootReducer = combineReducers({
+  user: UserReducer,
+  cart: CartReducer,
+});
+
+export default persistReducer(persistConfig, rootReducer);
+```
+
+To make this work, we need to add it to our `index.js`:
+
+```react
+import { PersistGate } from 'redux-persist/integration/react';
+```
+
+The `redux-persist` exists for multiple platforms (React, React Native, Electron) which means there are platform specific implementations and here we are importing the one for React.
+
+After that, we need to modify import of the store to match the changed export:
+
+```react
+import { ReduxStore, persistor } from './redux/Store';
+```
+
+Last step is wrapping the `App` with `PersistGate` to which we pass in the `persistor`:
+
+``` react
+<PersistGate persistor={persistor}>
+    <App />
+</PersistGate>
+```
+
+
 
 ## Cool Stuff
 
@@ -489,3 +564,11 @@ If we have a block that we need to repeat, we can use it like this. (`$main-colo
 #### `connect`
 
 In case we use the `connect` method from Redux and don't provide the `mapDispatchToProps`, it will provide the `dispatch` method as a prop to the component. This is useful if we need it only once on that component.
+
+#### `sessionStorage`
+
+Stores data while the session is open - until the tab is closed.
+
+#### `localStorage`
+
+Stores data until we clear it - we will have access to it event after closing the tab or even closing the browser.
