@@ -438,7 +438,25 @@ const mapStateToProps = state => ({
 });
 ```
 
+If we have multiple selectors in `mapStateToProps`, we can use a structured selector to convert for example this:
 
+``` react
+const mapStateToProps = state => ({
+  currentUser: selectCurrentUser(state),
+  hidden: selectCartHidden(state),
+});
+```
+
+to this:
+
+``` react
+const mapStateToProps = createStructuredSelector({
+  currentUser: selectCurrentUser,
+  hidden: selectCartHidden,
+});
+```
+
+And this is the way we should use it always, even if we have only one selector. This is future proof.
 
 ## Cool Stuff
 
@@ -467,3 +485,7 @@ If we have a block that we need to repeat, we can use it like this. (`$main-colo
     @include shrinkLabel();
 }
 ```
+
+#### `connect`
+
+In case we use the `connect` method from Redux and don't provide the `mapDispatchToProps`, it will provide the `dispatch` method as a prop to the component. This is useful if we need it only once on that component.
