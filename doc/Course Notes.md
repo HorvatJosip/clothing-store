@@ -378,7 +378,67 @@ this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
 
 The process can be visualized nicely from the middleware `redux-logger` we added:
 
-![Redux Result](.\Redux Result.png)
+![Redux Result](.\img\Redux Result.png)
+
+## Memoization
+
+The method `mapStateToProps` is called whenever state changes, even if it isn't connected to the reducer from which we are pulling the values.
+
+``` react
+const mapStateToProps = ({ cart: { cartItems } }) => ({
+  itemCount: cartItems.reduce(
+    (currentValue, cartItem) => (currentValue += cartItem.quantity),
+    0
+  ),
+});
+```
+
+The example above will re-render the component every time anything changes in the global state. In order to not re-render everything if we assign some values which didn't change, but Redux thinks they did, we need to use memoization. There is a library called `reselect` which will help us achieve that and extract our `mapStateToProps` logic code into something reusable.
+
+`yarn add reselect`
+
+It allows us to write selectors:
+
+* Input selector - doesn't use `createSelector`
+  * Example: `const selectCart = state => state.cart;`
+* Output selector - uses input selectors and `createSelector` to build themselves
+  * `createSelector` takes in 2 arguments:
+  * Array of input selectors
+  * Function that will return the value we need
+    * Parameters that will be passed in are selectors passed in as first argument
+  * Example:
+
+``` react
+const selectCart = state => state.cart;
+
+export const selectCartItems = createSelector(
+  [selectCart],
+  cart => cart.cartItems
+);
+
+export const selectCartItemsCount = createSelector(
+  [selectCartItems],
+  cartItems =>
+    cartItems.reduce(
+      (currentValue, cartItem) => (currentValue += cartItem.quantity),
+      0
+    )
+);
+```
+
+And now, to use it, we just import it and use it by passing in the state:
+
+``` react
+import { selectCartItemsCount } from '../../redux/cart/CartSelectors';
+
+. . .
+
+const mapStateToProps = state => ({
+  itemCount: selectCartItemsCount(state),
+});
+```
+
+
 
 ## Cool Stuff
 
