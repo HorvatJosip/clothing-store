@@ -1,5 +1,7 @@
 # React Course Notes
 
+![Responsibilities](.\img\Responsibilities.png)
+
 ## yarn
 
 `npm i -g yarn`
@@ -561,6 +563,8 @@ export const selectCollection = collectionUrlParam =>
   );
 ```
 
+## Stripe frontend
+
 
 
 ## Cool Stuff
@@ -577,7 +581,7 @@ If we are passing many parameters from an item into a component that match by na
 
 #### Sass `mixin`s
 
-If we have a block that we need to repeat, we can use it like this. (`$main-color` is a sass variable)
+If we have a block that we need to repeat, we can use it like this. (`$main-color` is a sass variable, e.g. `$main-color: red`)
 
 ``` scss
 @mixin shrinkLabel {
