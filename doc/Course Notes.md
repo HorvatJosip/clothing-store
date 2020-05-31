@@ -531,6 +531,36 @@ Last step is wrapping the `App` with `PersistGate` to which we pass in the `pers
 </PersistGate>
 ```
 
+## Handling route parameters
+
+``` react
+<div className='shop-page'>
+    <Route exact path={`${match.path}`} component={CollectionsOverview} />
+
+    <Route path={`${match.path}/:collectionId`} component={CollectionPage} />
+</div>
+```
+
+Here we are using a default route for shop and a route for different collections that are handled by `CollectionPage`.
+
+Inside the `CollectionPage`, we are using `mapStateToProps` with both of its arguments in order to select a collection based on route (passed in parameter defined as `collectionId`). The parameter will be passed into the component through the props inside the `match.params` object.
+
+``` react
+const mapStateToProps = (state, ownProps) => ({
+  collection: selectCollection(ownProps.match.params.collectionId)(state),
+});
+```
+
+`selectCollection` is written as a selector that is constructed from a parameter (in this case `collectionId`):
+
+``` react
+export const selectCollection = collectionUrlParam =>
+  createSelector(
+    [selectCollections],
+    collections => collections[collectionUrlParam]
+  );
+```
+
 
 
 ## Cool Stuff
