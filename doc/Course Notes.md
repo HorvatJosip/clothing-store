@@ -1,6 +1,6 @@
 # React Course Notes
 
-![Responsibilities](.\img\Responsibilities.png)
+![Responsibilities](./img/Responsibilities.png)
 
 ## yarn
 
@@ -228,11 +228,11 @@ componentWillUnmount() {
 
 `yarn add redux redux-logger react-redux`
 
-![Reducer Flow](.\img\Reducer Flow.png)
+![Reducer Flow](./img/Reducer Flow.png)
 
-![Redux Flow](.\img\Redux Flow.png)
+![Redux Flow](./img/Redux Flow.png)
 
-![Reducer Flow](.\img\Reducer Flow Diagram.png)
+![Reducer Flow](./img/Reducer Flow Diagram.png)
 
 First, we have to define actions that are going to occur on specific reducers. Inside the folder `src/redux/user`, we can create `UserActions.js` which will define which actions can be performed by the `UserReducer`.
 
@@ -563,9 +563,15 @@ export const selectCollection = collectionUrlParam =>
   );
 ```
 
-## Stripe frontend
+## Deploying
 
-
+* Create Heroku account
+* Download and install their [CLI](https://devcenter.heroku.com/articles/heroku-cli#download-and-install)
+* Test that it works by running `heroku --version` in the terminal
+* Login into the CLI by using `heroku login`
+* Create a Heroku project: `heroku create <project name> --buildpack https://github.com/mars/create-react-app-buildpack.git`
+  * `--buildpack` - specific configuration for the build we want - deploys our React app as a static website (best and most efficient way to host the React project with `create-react-app`)
+*  Upload the project to Heroku: `git push heroku master`
 
 ## Cool Stuff
 
