@@ -572,6 +572,10 @@ export const selectCollection = collectionUrlParam =>
 * Create a Heroku project: `heroku create <project name> --buildpack https://github.com/mars/create-react-app-buildpack.git`
   * `--buildpack` - specific configuration for the build we want - deploys our React app as a static website (best and most efficient way to host the React project with `create-react-app`)
 *  Upload the project to Heroku: `git push heroku master`
+* To open the site, use `heroku open`
+* To allow Google sign in again, do the following:
+  * Go to the [Firebase console](https://console.firebase.google.com/) and then click on your project
+  * Go to `Authentication` - `Sign-in method` and scroll to `Authorized domains` and add Heroku app domain
 
 ## Cool Stuff
 
