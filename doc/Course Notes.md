@@ -576,8 +576,13 @@ export const selectCollection = collectionUrlParam =>
 * To allow Google sign in again, do the following:
   * Go to the [Firebase console](https://console.firebase.google.com/) and then click on your project
   * Go to `Authentication` - `Sign-in method` and scroll to `Authorized domains` and add Heroku app domain
+* Optional: [automate the deploys after code push](https://devcenter.heroku.com/articles/github-integration#automatic-deploys)
 
 ## Cool Stuff
+
+#### `process.env`
+
+Contains useful information about the environment. For example, we can use `process.env.NODE_ENV` to determine in which environment is the app running (production, development or test).
 
 #### Spreading parameters
 
