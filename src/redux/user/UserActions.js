@@ -34,6 +34,21 @@ export const signOutFailure = error => ({
   payload: error,
 });
 
+export const signUpStart = userData => ({
+  type: NAMES.SIGN_UP_START,
+  payload: userData,
+});
+
+export const signUpSuccess = ({ user, additionalData }) => ({
+  type: NAMES.SIGN_UP_SUCCESS,
+  payload: { user, additionalData },
+});
+
+export const signUpFailure = error => ({
+  type: NAMES.SIGN_UP_FAILURE,
+  payload: error,
+});
+
 const NAMES = {
   SET_CURRENT_USER: 'SET_CURRENT_USER',
   GOOGLE_SIGN_IN_START: 'GOOGLE_SIGN_IN_START',
@@ -44,6 +59,9 @@ const NAMES = {
   SIGN_OUT_START: 'SIGN_OUT_START',
   SIGN_OUT_SUCCESS: 'SIGN_OUT_SUCCESS',
   SIGN_OUT_FAILURE: 'SIGN_OUT_FAILURE',
+  SIGN_UP_START: 'SIGN_UP_START',
+  SIGN_UP_SUCCESS: 'SIGN_UP_SUCCESS',
+  SIGN_UP_FAILURE: 'SIGN_UP_FAILURE',
 };
 
 export default NAMES;

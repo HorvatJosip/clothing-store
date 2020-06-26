@@ -2,7 +2,7 @@
 //    Instead of calling the method directly, we defer control back to the saga middleware
 //    In case it needs to cancel, saga can cancel it for us
 // put - dispatching
-import { takeLatest, call, put } from 'redux-saga/effects';
+import { takeLatest, all, call, put } from 'redux-saga/effects';
 
 import {
   firestore,
@@ -36,4 +36,8 @@ export function* fetchCollectionsAsync() {
 
 export function* fetchCollectionsStart() {
   yield takeLatest(ShopActions.FETCH_COLLECTIONS_START, fetchCollectionsAsync);
+}
+
+export default function* shopSagas() {
+  yield all([call(fetchCollectionsStart)]);
 }
