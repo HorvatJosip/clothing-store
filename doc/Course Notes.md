@@ -1058,6 +1058,94 @@ export default connect(null, mapDispatchToProps)(ShopPage);
 
 ```
 
+## Redux Saga
+
+`yarn add redux-saga`
+
+Popular way of handling side effects - API calls or something that triggers an impure reaction (function that doesn't always return the same value - for example, API call may return data or it may return an error because it failed to fetch data).
+
+Based on generator methods (`async` and `await` are built on top of them):
+
+``` javascript
+function* generator(number) {
+    yield number;
+    yield number + 10;
+    return 25;
+}
+
+const g = generator(10);
+g.next(); // Output: { value: 10, done: false }
+g.next(); // Output: { value: 20, done: false }
+g.next(); // Output: { value: 25, done: true }
+```
+
+Saga example for fetching collections:
+
+##### Original
+
+```javascript
+export const fetchCollectionsStartAsync = () => dispatch => {
+  dispatch(fetchCollectionsStart());
+
+  const collectionRef = firestore.collection('collections');
+
+  collectionRef
+    .get()
+    .then(async snapshot => {
+      const collectionsMap = convertCollectionsSnapshotToMap(snapshot);
+
+      dispatch(fetchCollectionsSuccess(collectionsMap));
+    })
+    .catch(error => dispatch(fetchCollectionsFailure(error)));
+};
+```
+
+##### As saga
+
+``` javascript
+// takeEvery - listens for every action of a specific type we pass to it
+// call:
+//    Instead of calling the method directly, we defer control back to the saga middleware
+//    In case it needs to cancel, saga can cancel it for us
+// put - dispatching
+import { takeEvery, call, put } from 'redux-saga/effects';
+
+import {
+  firestore,
+  convertCollectionsSnapshotToMap,
+} from '../../firebase/firebaseUtils';
+
+import {
+  fetchCollectionsSuccess,
+  fetchCollectionsFailure,
+} from './ShopActions';
+
+import ShopActions from './ShopActions';
+
+export function* fetchCollectionsAsync() {
+  try {
+    const collectionRef = firestore.collection('collections');
+
+    // When this value comes back, it comes back in a promise form (similar to await)
+    const snapshot = yield collectionRef.get();
+
+    const collectionsMap = yield call(
+      convertCollectionsSnapshotToMap,
+      snapshot
+    );
+
+    yield put(fetchCollectionsSuccess(collectionsMap));
+  } catch (error) {
+    yield put(fetchCollectionsFailure(error));
+  }
+}
+
+export function* fetchCollectionsStart() {
+  yield takeEvery(ShopActions.FETCH_COLLECTIONS_START, fetchCollectionsAsync);
+}
+
+```
+
 
 
 ## Cool Stuff
