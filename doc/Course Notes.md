@@ -1177,6 +1177,36 @@ There are different saga `effects`:
 
 `yield put(sameAsForDispatch)`
 
+Inside the store, we should add code to setup the saga middleware:
+
+``` javascript
+import createSagaMiddleware from 'redux-saga';
+
+const sagaMiddleware = createSagaMiddleware();
+
+import rootSaga from './RootSaga';
+
+const middlewares = [sagaMiddleware];
+
+const store = createStore(RootReducer, applyMiddleware(...middlewares));
+
+sagaMiddleware.run(rootSaga);
+```
+
+The root saga will contain all of the sagas:
+
+```javascript
+import { all, call } from 'redux-saga/effects';
+
+import { fetchCollectionsStart } from './shop/ShopSagas';
+
+export default function* rootSaga() {
+  yield all([call(fetchCollectionsStart)]);
+}
+```
+
+The `all` effect is used so that we can initialize all sagas side by side instead of one by one.
+
 ## Cool Stuff
 
 #### `process.env`
