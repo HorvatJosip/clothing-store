@@ -1146,7 +1146,36 @@ export function* fetchCollectionsStart() {
 
 ```
 
+There are different saga `effects`:
 
+* `take` - waits for the given action to happen; when it does, it returns a payload
+  * The code that is written after the take will happen only once
+
+`const incrementPayload = yield take('INCREMENT')`
+
+* `takeEvery`
+  * The function (task) we pass to it happens every time the action we specify occurs
+  * Similar to `take` inside `while(true)` loop
+
+`yield takeEvery('INCREMENT', incrementHandlerGeneratorFunction)`
+
+* `takeLatest` - it will cancel any previous that are being processed and let only the latest one go through (for example, something is triggered by click, we click once and it doesn't finish what it was processing and we click again, it gets canceled and a new saga is launched)
+
+`yield takeLatest('INCREMENT', incrementHandlerGeneratorFunction)`
+
+* `delay` - puts the saga on hold (sleeps on that thread)
+
+`yield delay(3000)`
+
+* `call`
+  * Instead of calling the method directly, we defer control back to the saga middleware
+  * In case it needs to cancel, saga can cancel it for us
+
+`yield call(methodToCall, parametersForTheMethod)`
+
+* put - dispatching the action
+
+`yield put(sameAsForDispatch)`
 
 ## Cool Stuff
 

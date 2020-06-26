@@ -1,9 +1,8 @@
-// takeEvery - listens for every action of a specific type we pass to it
 // call:
 //    Instead of calling the method directly, we defer control back to the saga middleware
 //    In case it needs to cancel, saga can cancel it for us
 // put - dispatching
-import { takeEvery, call, put } from 'redux-saga/effects';
+import { takeLatest, call, put } from 'redux-saga/effects';
 
 import {
   firestore,
@@ -36,5 +35,5 @@ export function* fetchCollectionsAsync() {
 }
 
 export function* fetchCollectionsStart() {
-  yield takeEvery(ShopActions.FETCH_COLLECTIONS_START, fetchCollectionsAsync);
+  yield takeLatest(ShopActions.FETCH_COLLECTIONS_START, fetchCollectionsAsync);
 }
