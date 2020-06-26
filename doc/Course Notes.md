@@ -981,6 +981,83 @@ export default connect(mapStateToProps, mapDispatchToProps)(ShopPage);
 
 ```
 
+## Container pattern
+
+Moving HOC nesting inside a separate file. Example:
+
+``` javascript
+import { connect } from 'react-redux';
+import { createStructuredSelector } from 'reselect';
+import { compose } from 'redux';
+
+import { selectIsFetchingCollections } from '../../redux/shop/ShopSelectors';
+
+import WithSpinner from '../WithSpinner/WithSpinner';
+import CollectionsOverview from './CollectionsOverview';
+
+const mapStateToProps = createStructuredSelector({
+  // We must make sure that the name matches the property of WithSpinner HOC
+  isLoading: selectIsFetchingCollections,
+});
+
+// compose will do it from bottom to top:
+// CollectionsOverview will get passed into WithSpinner and then
+// that component will be passed into connect
+const CollectionsOverviewContainer = compose(
+  connect(mapStateToProps),
+  WithSpinner
+)(CollectionsOverview);
+
+export default CollectionsOverviewContainer;
+
+```
+
+Doing this makes the `ShopPage` code much nicer and easier to read:
+
+``` react
+import React, { Component } from 'react';
+import { Route } from 'react-router-dom';
+import { connect } from 'react-redux';
+
+import CollectionsOverviewContainer from '../../components/CollectionsOverview/CollectionsOverviewContainer';
+import CollectionPageContainer from '../../pages/CollectionPage/CollectionPageContainer';
+
+import { fetchCollectionsStartAsync } from '../../redux/shop/ShopActions';
+
+class ShopPage extends Component {
+  componentDidMount() {
+    const { fetchCollectionsStartAsync } = this.props;
+    fetchCollectionsStartAsync();
+  }
+
+  render() {
+    const { match } = this.props;
+
+    return (
+      <div className='shop-page'>
+        <Route
+          exact
+          path={`${match.path}`}
+          component={CollectionsOverviewContainer}
+        />
+
+        <Route
+          path={`${match.path}/:collectionId`}
+          component={CollectionPageContainer}
+        />
+      </div>
+    );
+  }
+}
+
+const mapDispatchToProps = dispatch => ({
+  fetchCollectionsStartAsync: () => dispatch(fetchCollectionsStartAsync()),
+});
+
+export default connect(null, mapDispatchToProps)(ShopPage);
+
+```
+
 
 
 ## Cool Stuff
