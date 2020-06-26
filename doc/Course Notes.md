@@ -578,6 +578,273 @@ export const selectCollection = collectionUrlParam =>
   * Go to `Authentication` - `Sign-in method` and scroll to `Authorized domains` and add Heroku app domain
 * Optional: [automate the deploys after code push](https://devcenter.heroku.com/articles/github-integration#automatic-deploys)
 
+## Styled components
+
+`yarn add styled-components`
+
+Prevents global classes problem. Benefits of JavaScript alongside Sass.
+
+``` react
+import styled, { css } from "styled-components";
+import { Link } from "react-router-dom";
+
+const OptionContainerStyles = css`
+  padding: 10px 15px;
+  cursor: pointer;
+`;
+
+export const HeaderContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+
+  width: 100%;
+  height: 70%;
+  margin: 0 0 25px 0;
+`;
+
+export const LogoContainer = styled(Link)`
+  width: 70px;
+  height: 100%;
+  padding: 25px;
+`;
+
+export const OptionsContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  width: 50%;
+  height: 100%;
+`;
+
+export const OptionLink = styled(Link)`
+  ${OptionContainerStyles}
+`;
+
+export const OptionDiv = styled.div`
+  ${OptionContainerStyles}
+`;
+
+```
+
+If the only difference in type of element, we don't have to reuse the styles with `css`, but we can delete the `OptionDiv` and tell the `OptionLink` to act as a `div` by doing `<OptionLink as='div' />` (`as` can take in a component as well):
+
+``` react
+import styled from "styled-components";
+import { Link } from "react-router-dom";
+
+export const HeaderContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+
+  width: 100%;
+  height: 70%;
+  margin: 0 0 25px 0;
+`;
+
+export const LogoContainer = styled(Link)`
+  width: 70px;
+  height: 100%;
+  padding: 25px;
+`;
+
+export const OptionsContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  width: 50%;
+  height: 100%;
+`;
+
+export const OptionLink = styled(Link)`
+  padding: 10px 15px;
+  cursor: pointer;
+`;
+
+// . . .
+
+<OptionLink as='div' onClick={() => auth.signOut()}>
+    SIGN OUT
+</OptionLink>
+```
+
+## Extending Firebase usage
+
+Reminder from previous Firebase section (`userAuth` is parameter that contains information about the user):
+
+``` javascript
+const userRef = firestore.collection('users').doc(userAuth.uid);
+
+const snapshot = await userRef.get();
+
+if (!snapshot.exists) {
+    const { displayName, email } = userAuth;
+    const createdAt = new Date();
+
+    try {
+        await userRef.set({
+            displayName,
+            email,
+            createdAt,
+            ...additionalData,
+        });
+    } catch (e) {
+        console.error('error creating user', e.message);
+    }
+}
+```
+
+In Firebase we work with references and snapshots. `userRef` is a `DocumentReference` because we used the `doc` method. If we referenced a collection (method `collection`), we would get back a `CollectionReference`.
+
+There are few operations we can perform:
+
+* On a `CollectionReference`, we can use `add` method to insert a document into the collection or a `get` method to retrieve its snapshot
+  * `get` method returns a `QuerySnapshot`
+    * We can check if the collection is empty by using the `empty` property. If it isn't empty, we can get all of the documents inside of it by using `docs` method (number of documents can be checked by using the `size` property) which is an array of document snapshots
+* On a `DocumentReference`, we can perform CRUD operations with methods `set`, `get`, `update` and `delete`
+  * `get` method returns a `DocumentSnapshot`
+    * We can check if the document exists by using its `exists` property. If it exists, we can get its properties by using `data` method which returns a JSON object
+
+There are several types that can be used for fields (columns):
+
+* String
+* Number
+* Boolean
+* Map (dictionary) (JavaScript object)
+* Array (Map where index is the key)
+* Null
+* Timestamp
+* `Geopoint`
+
+We can add documents in batches. Here is an example where we insert a collection and documents inside of it:
+
+``` javascript
+const addCollectionAndDocuments = (collectionKey, objectsToAdd) => {
+  const collectionRef = firestore.collection(collectionKey);
+
+  const batch = firestore.batch();
+
+  objectsToAdd.forEach(obj => {
+    // If we don't pass anything to the doc method, we are telling it to create a new document with unique id
+    const newDocRef = collectionRef.doc();
+
+    batch.set(newDocRef, obj);
+  });
+
+  return batch.commit();
+};
+```
+
+## Implementing Firebase data
+
+``` react
+  import {
+    firestore,
+    convertCollectionsSnapshotToMap,
+  } from '../../firebase/firebaseUtils';
+  import { updateCollections } from '../../redux/shop/ShopActions';
+
+  // . . .
+
+  unsubscribeFromSnapshot = null;
+
+  componentDidMount() {
+    const { updateCollections } = this.props;
+    const collectionRef = firestore.collection('collections');
+
+    this.unsubscribeFromSnapshot = collectionRef.onSnapshot(async snapshot => {
+      updateCollections(convertCollectionsSnapshotToMap(snapshot));
+    });
+  }
+
+  componentWillUnmount() {
+    this.unsubscribeFromSnapshot();
+  }
+```
+
+`onSnapshot` takes in an observer that will be notified with initial data and whenever data changes in the collection.
+
+**If we don't want to use the observable pattern, we can use the `get` method which will return a promise.**
+
+If we want to use the **Fetch API**, we can make calls to the following URL: `https://firestore.googleapis.com/v1/projects/<your project id>/databases/(default)/documents/`.
+
+> The Project ID is available by clicking on the gear icon (next to Project Overview) => Project settings
+
+If we want to get the users in the database, we would use Fetch API GET request to `https://firestore.googleapis.com/v1/projects/<your project id>/databases/(default)/documents/users`. But that is really inconvenient using Firebase database. 
+
+`convertCollectionsSnapshotToMap` utility:
+
+``` react
+export const convertCollectionsSnapshotToMap = snapshot => {
+  const transformedCollection = snapshot.docs.map(doc => {
+    const { title, items } = doc.data();
+
+    return {
+      routeName: encodeURI(title.toLowerCase()),
+      id: doc.id,
+      title,
+      items,
+    };
+  });
+
+  return transformedCollection.reduce((accumulator, collection) => {
+    accumulator[collection.title.toLowerCase()] = collection;
+
+    return accumulator;
+  }, {}); // {} is initial accumulator value
+};
+```
+
+## Higher Order Component (HOC)
+
+A component that takes in another component as parameter. For example, we can make a loading HOC:
+
+``` react
+const WithSpinner = WrappedComponent => ({ isLoading, ...otherProps }) => {
+  return isLoading ? (
+    <SpinnerOverlay>
+      <SpinnerContainer />
+    </SpinnerOverlay>
+  ) : (
+    <WrappedComponent {...otherProps} />
+  );
+};
+```
+
+and use it on a page:
+
+```react
+const CollectionsOverviewWithSpinner = WithSpinner(CollectionsOverview);
+const CollectionPageWithSpinner = WithSpinner(CollectionPage);
+
+// . . .
+
+    const { match } = this.props;
+    const { loading } = this.state;
+
+    return (
+      <div className='shop-page'>
+        <Route
+          exact
+          path={`${match.path}`}
+          render={props => (
+            <CollectionsOverviewWithSpinner isLoading={loading} {...props} />
+          )}
+        />
+
+        <Route
+          path={`${match.path}/:collectionId`}
+          render={props => (
+            <CollectionPageWithSpinner isLoading={loading} {...props} />
+          )}
+        />
+      </div>
+    );
+```
+
+
+
 ## Cool Stuff
 
 #### `process.env`
