@@ -843,6 +843,144 @@ const CollectionPageWithSpinner = WithSpinner(CollectionPage);
     );
 ```
 
+## Redux Thunk
+
+`yarn add redux-thunk`
+
+Allows us to handle asynchronous event handling and firing multiple actions.
+
+We need to add it as a middleware inside `Store.js`:
+
+``` react
+import thunk from 'redux-thunk';
+
+const middlewares = [thunk];
+```
+
+Basically, if `redux-thunk` is enabled, any time you attempt to `dispatch` a function instead of an object, the middleware will call that function with `dispatch` method itself as the first argument.
+
+This makes writing asynchronous actions easy to write:
+
+``` javascript
+import {
+  firestore,
+  convertCollectionsSnapshotToMap,
+} from '../../firebase/firebaseUtils';
+
+export const fetchCollectionsStart = () => ({
+  type: NAMES.FETCH_COLLECTIONS_START,
+});
+
+export const fetchCollectionsSuccess = collectionsMap => ({
+  type: NAMES.FETCH_COLLECTIONS_SUCCESS,
+  payload: collectionsMap,
+});
+
+export const fetchCollectionsFailure = errorMessage => ({
+  type: NAMES.FETCH_COLLECTIONS_FAILURE,
+  payload: errorMessage,
+});
+
+export const fetchCollectionsStartAsync = () => dispatch => {
+  dispatch(fetchCollectionsStart());
+
+  const collectionRef = firestore.collection('collections');
+
+  collectionRef
+    .get()
+    .then(async snapshot => {
+      const collectionsMap = convertCollectionsSnapshotToMap(snapshot);
+
+      dispatch(fetchCollectionsSuccess(collectionsMap));
+    })
+    .catch(error => dispatch(fetchCollectionsFailure(error)));
+};
+
+const NAMES = {
+  FETCH_COLLECTIONS_START: 'FETCH_COLLECTIONS_START',
+  FETCH_COLLECTIONS_SUCCESS: 'FETCH_COLLECTIONS_SUCCESS',
+  FETCH_COLLECTIONS_FAILURE: 'FETCH_COLLECTIONS_FAILURE',
+};
+
+export default NAMES;
+
+```
+
+Now, we can make a selector for `isFetching`:
+
+``` javascript
+export const selectIsFetchingCollection = createSelector(
+  [selectShop],
+  shop => shop.isFetching
+);
+```
+
+and use it inside the `ShopPage`:
+
+```react
+import React, { Component } from 'react';
+import { Route } from 'react-router-dom';
+import { createStructuredSelector } from 'reselect';
+import { connect } from 'react-redux';
+
+import CollectionsOverview from '../../components/CollectionsOverview/CollectionsOverview';
+import CollectionPage from '../CollectionPage/CollectionPage';
+import WithSpinner from '../../components/WithSpinner/WithSpinner';
+
+import { fetchCollectionsStartAsync } from '../../redux/shop/ShopActions';
+import { selectIsFetchingCollection } from '../../redux/shop/ShopSelectors';
+
+const CollectionsOverviewWithSpinner = WithSpinner(CollectionsOverview);
+const CollectionPageWithSpinner = WithSpinner(CollectionPage);
+
+class ShopPage extends Component {
+  componentDidMount() {
+    const { fetchCollectionsStartAsync } = this.props;
+    fetchCollectionsStartAsync();
+  }
+
+  render() {
+    const { match, isFetchingCollections } = this.props;
+
+    return (
+      <div className='shop-page'>
+        <Route
+          exact
+          path={`${match.path}`}
+          render={props => (
+            <CollectionsOverviewWithSpinner
+              isLoading={isFetchingCollections}
+              {...props}
+            />
+          )}
+        />
+
+        <Route
+          path={`${match.path}/:collectionId`}
+          render={props => (
+            <CollectionPageWithSpinner
+              isLoading={isFetchingCollections}
+              {...props}
+            />
+          )}
+        />
+      </div>
+    );
+  }
+}
+
+const mapStateToProps = createStructuredSelector({
+  isFetchingCollections: selectIsFetchingCollection,
+});
+
+const mapDispatchToProps = dispatch => ({
+  fetchCollectionsStartAsync: () => dispatch(fetchCollectionsStartAsync()),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(ShopPage);
+
+```
+
 
 
 ## Cool Stuff
