@@ -1208,6 +1208,44 @@ export default function* rootSaga() {
 
 The `all` effect is used so that we can initialize all sagas side by side instead of one by one.
 
+## Hooks
+
+### `useState`
+
+`const [name, setName] = useState('Hoc');`
+
+### `useEffect`
+
+Used for firing side effects inside functional components.
+
+The method we pass into It as first parameter gets called whenever the component changes or when another component updates and re-renders.
+
+The second parameter is an array of state properties which will trigger the method when they change. For example, if we pass in `[name]` (specified by the `useState` call from above), it wouldn't react on other properties inside the state. The method would only be called when the component mounts (`onComponentDidMount`) and whenever the `name` property changes. If we want the method to only be fired when the component mounts, we just need to pass in an empty array ("I want this effect to depend on nothing").
+
+If we don't pass in anything as second argument (meaning it should call the given method on every side effect), using `setName` inside of it would create an infinite loop because we are changing the state and it fires every time the state has changed. Here is an example of how to use it propertly:
+
+``` javascript
+const [user, setUser] = useState(null);
+const [searchQuery, setSearchQuery] = useState('Bret');
+
+useEffect(() => {
+    const fetchFunc = async () => {
+        const response = await fetch(
+        	`https://jsonplaceholder.typicode.com/users?username=${searchQuery}`
+        );
+        
+        const response = await response.json();
+        
+        setUser(response[0]);
+    }
+}, [searchQuery]);
+```
+
+### Rules
+
+* The method we pass into `useEffect` cannot return anything - this means that asynchronous methods should be declared and then called after declaration
+* `useEffect` must be positioned on the top level, it cannot be nested inside, for example, an if statement
+
 ## Cool Stuff
 
 #### `process.env`
