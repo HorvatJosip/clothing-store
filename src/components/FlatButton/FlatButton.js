@@ -1,16 +1,9 @@
 import React from 'react';
 
-import './FlatButton.scss';
+import { CustomButtonContainer } from './FlatButtonStyles';
 
-const FlatButton = ({ children, isGoogleSignIn, inverted, ...otherProps }) => (
-  <button
-    className={`${inverted ? 'inverted' : ''} ${
-      isGoogleSignIn ? 'google-sign-in' : ''
-    } flat-button`}
-    {...otherProps}
-  >
-    {children}
-  </button>
+const FlatButton = ({ children, ...props }) => (
+  <CustomButtonContainer {...props}>{children}</CustomButtonContainer>
 );
 
 export default FlatButton;
