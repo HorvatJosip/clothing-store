@@ -27,6 +27,14 @@ googleProvider.setCustomParameters({
 
 export const signInWithGoogle = () => auth.signInWithPopup(googleProvider);
 
+export const getCurrentUser = () =>
+  new Promise((resolve, reject) => {
+    const unsubscribe = auth.onAuthStateChanged(userAuth => {
+      unsubscribe();
+      resolve(userAuth);
+    }, reject);
+  });
+
 export const convertCollectionsSnapshotToMap = snapshot => {
   const transformedCollection = snapshot.docs.map(doc => {
     const { title, items } = doc.data();

@@ -1150,6 +1150,7 @@ There are different saga `effects`:
 
 * `take` - waits for the given action to happen; when it does, it returns a payload
   * The code that is written after the take will happen only once
+  * `take` effects are taking an action from the regular redux flow, processing it and then passing the result to regular Redux flow by passing the actions to reducers (success or failure)
 
 `const incrementPayload = yield take('INCREMENT')`
 
