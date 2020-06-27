@@ -1581,6 +1581,39 @@ We can then add it to `index.js` just like the Redux provider.
 
 Wherever we need to use the values exposed by `CartContext.Provider.value`, we just need to call `const { <properties we need here> } = useContext(CartContext);` 
 
+## Performance
+
+* `Chunkifying` code
+
+  * with `React.lazy`
+
+  Instead of
+
+  ``` javascript
+  import HomePage from './pages/HomePage/HomePage';
+  ```
+
+  We can do
+
+  ``` javascript
+  const HomePage = lazy(() => import('./pages/HomePage/HomePage'));
+  ```
+
+  The problem is that it will throw an error unless we use the `Suspense` component to wrap the `HomePage` component where we want to render it.
+
+  * and with ``React.Suspense`
+    * Component that allows you to wrap any part of the application that might be rendering asynchronous components (lazy loading components)
+    * It must take in a `fallback` which is any HTML element (usually a spinner or something that indicates loading) that it will render instead of the child element we have given it
+
+  ```react
+  <Suspense fallback={<Spinner />}>
+      <Route exact path='/' component={HomePage} />
+  </Suspense>
+  ```
+
+  * We usually want to do this for every page (or any bigger set of components) except the home page (because it is the one that is initially loaded)
+  * We can wrap all of those pages in a single `Suspense`
+
 ## Cool Stuff
 
 #### `process.env`
