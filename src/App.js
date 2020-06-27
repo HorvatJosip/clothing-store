@@ -5,13 +5,14 @@ import { createStructuredSelector } from 'reselect';
 
 import Spinner from './components/Spinner/Spinner';
 import Header from './components/Header/Header';
-import HomePage from './pages/HomePage/HomePage';
 
 import { selectCurrentUser } from './redux/user/UserSelectors';
 import { checkUserSession } from './redux/user/UserActions';
 
 import './App.css';
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 
+const HomePage = lazy(() => import('./pages/HomePage/HomePage'));
 const ShopPage = lazy(() => import('./pages/ShopPage/ShopPage'));
 const AccountPage = lazy(() => import('./pages/AccountPage/AccountPage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage/CheckoutPage'));
@@ -25,16 +26,20 @@ const App = ({ checkUserSession, currentUser }) => {
     <div>
       <Header />
       <Switch>
-        <Route exact path='/' component={HomePage} />
-        <Suspense fallback={<Spinner />}>
-          <Route path='/shop' component={ShopPage} />
-          <Route exact path='/checkout' component={CheckoutPage} />
-          <Route
-            exact
-            path='/account'
-            render={() => (currentUser ? <Redirect to='/' /> : <AccountPage />)}
-          />
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense fallback={<Spinner />}>
+            <Route exact path='/' component={HomePage} />
+            <Route path='/shop' component={ShopPage} />
+            <Route exact path='/checkout' component={CheckoutPage} />
+            <Route
+              exact
+              path='/account'
+              render={() =>
+                currentUser ? <Redirect to='/' /> : <AccountPage />
+              }
+            />
+          </Suspense>
+        </ErrorBoundary>
       </Switch>
     </div>
   );

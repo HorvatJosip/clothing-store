@@ -1614,6 +1614,70 @@ Wherever we need to use the values exposed by `CartContext.Provider.value`, we j
   * We usually want to do this for every page (or any bigger set of components) except the home page (because it is the one that is initially loaded)
   * We can wrap all of those pages in a single `Suspense`
 
+* Adding error boundary to handle errors (network or similar).
+
+```react
+import React, { Component } from 'react';
+
+import {
+  ErrorImageContainer,
+  ErrorImageOverlay,
+  ErrorImageText,
+} from './ErrorBoundaryStyles';
+
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      hasErrored: false,
+    };
+  }
+
+  // Allows us to catch the error inside children ahead of time
+  static getDerivedStateFromError(error) {
+    // Catches any error that has been thrown by any child of this component
+
+    // Returning an object to set the local state
+    // If we do not do this, we are not aware that children inside this component
+    // have thrown an error (state will change and we will re-render)
+    return { hasErrored: true };
+  }
+
+  componentDidCatch(
+    // error that occured
+    error,
+    // information about the error like which component threw the error
+    errorInfo
+  ) {
+    console.error(error);
+    console.info(errorInfo);
+  }
+
+  render() {
+    if (this.state.hasErrored) {
+      return (
+        <ErrorImageOverlay>
+          <ErrorImageContainer imageUrl={'https://i.imgur.com/yW2W9SC.png'}>
+            <ErrorImageText>Sorry, this page is broken.</ErrorImageText>
+          </ErrorImageContainer>
+        </ErrorImageOverlay>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default ErrorBoundary;
+```
+
+* `memoization`
+  * Functional component always re-renders when parent re-renders. To stop it from doing so if no properties have changed, we can use `React memo` (for class based components, we can use `PureComponent`) by wrapping the component with `React.memo` which will `memoize` the component (**`memo` is an optimization if we know that the component will not need to update in certain scenarios, otherwise it is actually bad because the component load time increases if we wrap it with `memo`**)
+      * This is also true for `shouldComponentUpdate` and `PureComponent` (`PureComponent` implements the checks inside `shouldComponentUpdate` so that you don't have to do so manually)
+      * **It is important to use variables to pass as props and not directly (like <Person person={{name: 'Hoc', age: 22}} />) because that passed in object is created every time `render` method is invoked instead of using reference to the same object. Functions and arrays are also objects which means they have the same effect if passed in directly.**
+      * Many parts of the application are already `memoized` thanks to `reselect`
+
 ## Cool Stuff
 
 #### `process.env`
