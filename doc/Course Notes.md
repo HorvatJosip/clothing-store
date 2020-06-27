@@ -1255,6 +1255,332 @@ Giving an empty array to `useEffect` will cause a warning so we can pass in the 
 
 If we need to do something once the component unmounts (in `componentWillUnmount`), we can return a function inside the first parameter that we give to `useEffect`.
 
+### `useEffect` cheat sheet
+
+* `componentDidMount`
+
+``` javascript
+//Class
+componentDidMount() {
+    console.log('I just mounted!');
+}
+ 
+//Hooks
+useEffect(() => {
+    console.log('I just mounted!');
+}, []);
+```
+
+* `componentWillUnmount`
+
+``` javascript
+//Class
+componentWillUnmount() {
+    console.log('I am unmounting');
+}
+ 
+//Hooks
+useEffect(() => {
+    return () => console.log('I am unmounting');
+}, []);
+```
+
+* `componentWillReceiveProps`
+
+``` javascript
+//Class
+componentWillReceiveProps(nextProps) {
+    if (nextProps.count !== this.props.count) {
+        console.log('count changed', nextProps.count);
+    }
+}
+ 
+//Hooks
+useEffect(() => {
+    console.log('count changed', props.count);
+}, [props.count]);
+```
+
+### `useReducer`
+
+Redux reducer inside a component.
+
+``` react
+const INITIAL_STATE = {
+  currentUser: null,
+  searchQuery: 'Bret'
+};
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'SET_USER':
+      return {
+        ...state,
+        currentUser: action.payload
+      };
+    case 'SET_SEARCH_QUERY':
+      return {
+        ...state,
+        searchQuery: action.payload
+      };
+    default:
+      return state;
+  }
+};
+
+const setUser = user => ({
+  type: 'SET_USER',
+  payload: user
+});
+
+const setSearchQuery = queryString => ({
+  type: 'SET_SEARCH_QUERY',
+  payload: queryString
+});
+
+const UseReducerExample = () => {
+  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const { user, searchQuery } = state;
+
+  useEffect(() => {
+    const fetchFunc = async () => {
+      const response = await fetch(
+        `https://jsonplaceholder.typicode.com/users?username=${searchQuery}`
+      );
+      const resJson = await response.json();
+      dispatch(setUser(resJson[0]));
+    };
+
+    fetchFunc();
+  }, [searchQuery]);
+
+  return (
+    <Card>
+      <input
+        type='search'
+        value={searchQuery}
+        onChange={event => dispatch(setSearchQuery(event.target.value))}
+      />
+      {user ? (
+        <div>
+          <h3>{user.name}</h3>
+          <h3> {user.username} </h3>
+          <h3> {user.email} </h3>
+        </div>
+      ) : (
+        <p>No user found</p>
+      )}
+    </Card>
+  );
+};
+
+export default UseReducerExample;
+```
+
+#### Custom hooks
+
+Example (`src/effects/UseFetch.js`):
+
+```javascript
+import { useState, useEffect } from 'react';
+
+const useFetch = url => {
+    const [data, setData] = useState(null);
+    
+    useEffect(() => {
+       const fetchData = async () => {
+           const response = await fetch(url);
+           
+           setData(await response.json());
+       }
+       
+       fetchData();
+    }/* , [url] */);
+    
+    return data;
+}
+
+export default useFetch;
+```
+
+## Context API
+
+Managing state using React. This is internally used by Redux. 
+
+The benefit of Context API is that it is lightweight, verbose and easy to use. The drawback is that we lose the flexibility of Redux ecosystem - sagas, asynchronous actions, re-composability of the components (no tight coupling like with Context API). Also, we have to write providers and contexts for different sections. Reducer just has one provider where we give it a root reducer.
+
+Big, complex applications should use Redux.
+
+Setting and using initial state
+
+```react
+// src/contexts/collections/CollectionsContext.js
+
+import { createContext } from 'react';
+
+import SHOP_DATA from './shop.data';
+
+const CollectionsContext = createContext(SHOP_DATA);
+
+export default CollectionsContext;
+
+/// ...
+
+const CollectionPage = ({ match }) => {
+  return (
+    <CollectionsContext.Consumer>
+      {collections => {
+        const collection = collections[match.params.collectionId];
+        const { title, items } = collection;
+
+        return (
+          <div className='collection-page'>
+            <h2 className='title'>{title}</h2>
+            <div className='items'>
+              {items.map(item => (
+                <CollectionItem key={item.id} item={item} />
+              ))}
+            </div>
+          </div>
+        );
+      }}
+    </CollectionsContext.Consumer>
+  );
+};
+
+// OR, the shorter way:
+
+import React, { useContext } from 'react';
+// ...
+  const collections = useContext(CollectionsContext);
+  const collection = collections[match.params.collectionId];
+```
+
+Changing the state:
+
+```react
+// src/contexts/CurrentUser/CurrentUserContext.js
+
+import { createContext } from 'react';
+
+const CurrentUserContext = createContext(null);
+
+export default CurrentUserContext;
+
+// ... using state required ...
+
+// We need to wrap components that will use the currentUser (they will receive by using useContext hook)
+<CurrentUserContext.Provider value={this.state.currentUser}>
+    <Header />
+</CurrentUserContext.Provider>
+```
+
+Another example:
+
+``` react
+// src/contexts/Cart/CartContext.js
+
+import { createContext } from 'react';
+
+const CartContext = createContext({
+  hidden: true,
+  toggleHidden: () => {},
+});
+
+export default CartContext;
+
+// Header
+  const [hidden, setHidden] = useState(true);
+  const toggleHidden = () => setHidden(!hidden);
+
+// ...
+
+<CartContext.Provider
+    value={{
+        hidden,
+        toggleHidden,
+    }}
+    >
+    <CartIcon />
+</CartContext.Provider>
+
+// CartIcon
+  const { toggleHidden } = useContext(CartContext);
+
+  return (
+    <div className='cart-icon' onClick={toggleHidden}>
+      <ShoppingIcon className='shopping-icon' />
+      <span className='item-count'>{itemCount}</span>
+    </div>
+  );
+```
+
+Custom provider (`src/providers/cart/CartProvider.js`):
+
+``` react
+import React, { createContext, useState, useEffect } from 'react';
+import {
+  addItemToCart,
+  removeItemFromCart,
+  filterItemFromCart,
+  getCartItemsCount,
+  getCartTotal,
+} from './cart.utils';
+
+export const CartContext = createContext({
+  hidden: true,
+  toggleHidden: () => {},
+  cartItems: [],
+  addItem: () => {},
+  removeItem: () => {},
+  clearItemFromCart: () => {},
+  cartItemsCount: 0,
+  total: 0,
+});
+
+const CartProvider = ({ children }) => {
+  const [hidden, setHidden] = useState(true);
+  const [cartItems, setCartItems] = useState([]);
+  const [cartItemsCount, setCartItemsCount] = useState(0);
+  const [total, setTotal] = useState(0);
+
+  const toggleHidden = () => setHidden(!hidden);
+  const addItem = item => setCartItems(addItemToCart(cartItems, item));
+  const removeItem = item => setCartItems(removeItemFromCart(cartItems, item));
+  const clearItemFromCart = item =>
+    setCartItems(filterItemFromCart(cartItems, item));
+
+  useEffect(() => {
+    setCartItemsCount(getCartItemsCount(cartItems));
+    setTotal(getCartTotal(cartItems));
+  }, [cartItems]);
+
+  return (
+    <CartContext.Provider
+      value={{
+        hidden,
+        toggleHidden,
+        cartItems,
+        addItem,
+        removeItem,
+        cartItemsCount,
+        clearItemFromCart,
+        total,
+      }}
+    >
+      {children}
+    </CartContext.Provider>
+  );
+};
+
+export default CartProvider;
+
+```
+
+We can then add it to `index.js` just like the Redux provider.
+
+Wherever we need to use the values exposed by `CartContext.Provider.value`, we just need to call `const { <properties we need here> } = useContext(CartContext);` 
+
 ## Cool Stuff
 
 #### `process.env`
