@@ -1238,13 +1238,22 @@ useEffect(() => {
         
         setUser(response[0]);
     }
+    
+    fetchFunc();
 }, [searchQuery]);
 ```
 
 ### Rules
 
 * The method we pass into `useEffect` cannot return anything - this means that asynchronous methods should be declared and then called after declaration
+  * The reason is because it can return a function that will be called once the component unmounts, nothing else is accepted as return value
 * `useEffect` must be positioned on the top level, it cannot be nested inside, for example, an if statement
+
+When we talk about rendering cycles in our components, we know that our `ShopPage` component will only re-render if either our props change or if we called `setState` inside (`useState` hook) or if the parent of this component (`App` component) ends up calling re-render. The only time we know that will happen is if the property on `App` component (called `currentUser`) changes. If we don't listen for that kind of change, we will end up calling `useEffect` twice (because the user signed in and the `App` component re-rendered).
+
+Giving an empty array to `useEffect` will cause a warning so we can pass in the method that comes from `mapDispatchToProps` because we know it won't change.
+
+If we need to do something once the component unmounts (in `componentWillUnmount`), we can return a function inside the first parameter that we give to `useEffect`.
 
 ## Cool Stuff
 
