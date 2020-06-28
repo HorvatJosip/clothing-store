@@ -1679,6 +1679,22 @@ export default ErrorBoundary;
         * The method creation can be `memoized` using `useCallback` hook. We give it the method we want to use as first parameter and an array of dependencies as the second parameter. It will only recreate the method if some of the dependencies have changed, otherwise it will give us the same method that has been instantiated before.
         * If we want to `memoize` a value of some complex method (for example, something that does mathematically complex operations), we can use `useMemo` hook and store it inside a variable. It is very similar to `useCallback`, but this one expects the method we pass into it to return a value which it will cache. The value will be re-computed only when some of the dependencies change.
       * Many parts of the application are already `memoized` thanks to `reselect`
+* `gzip`
+  * `gzip` is a compression strategy for the server to have files in smaller package which get unzipped in client's browser. Once it is unzipped it is at full size of the bundles that the zip contains.
+  * Add `gzip` to the server
+    * `yarn add compression`
+    * Inside `server.js`, add these lines:
+      * `const compression = require('compression');`
+      * `app.use(compression());`
+* For testing components, we can wrap them in `Profiler` component that takes in properties `id` which is used for identifying which profiler is logging the data and `onRender` which takes in the following parameters:
+  * id - the "id" prop of the Profiler tree that has just committed
+  * phase - either "mount" (if the tree just mounted) or "update" (if it re-rendered)
+  * actualDuration - time spent rendering the committed update
+  * baseDuration  estimated time to render the entire subtree without memoization
+  * startTime - when React began rendering this update
+  * commitTime - when React committed this update
+  * interaction - the Set of interactions belonging to this update
+* [Cheat sheet](https://houssein.me/progressive-react)
 
 ## Cool Stuff
 
