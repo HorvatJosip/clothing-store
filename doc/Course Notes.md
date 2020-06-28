@@ -14,7 +14,7 @@ if you run a script with yarn, it will check if it has same one with 'pre' befor
 Add the following to `package.json`:
 
 ``` json
-"homepage": "[https://.github.io/.github.io/ Name>",
+"homepage": "https://<GitHub Username>.github.io/<GitHub Project Name>",
 // . . .
 "scripts": {
     "predeploy": "yarn build",
@@ -33,12 +33,12 @@ Constructor of component takes in props which should be passed to `super(props);
 * `render`
 * `componentDidMount`
 
-Whenever props or state changes `forceUpdate()` is also there, but should be avoided), `shouldComponentUpdate(nextProps, nextState)` is called which determines if the component should be updated (re-rendered) - if it does, it renders it again (with render method) and `componentDidUpdate` is called
+Whenever props or state changes (`forceUpdate()` is also there, but should be avoided), `shouldComponentUpdate(nextProps, nextState)` is called which determines if the component should be updated (re-rendered) - if it does, it renders it again (with `render` method) and `componentDidUpdate` is called
 
 Whenever a component gets re-rendered, all of its children get re-rendered. The way to stop that is by using `shouldComponentUpdate`
 For example, it doesn't make sense to re-render if `nextProps.text` is the same as `this.props.text`
 
-If for some reason a component is removed (good example is loading), it will go through unmounting phase in which the `componentWillUnmount` method is called before unmounting it form the DOM
+If for some reason a component is removed (good example is loading), it will go through unmounting phase in which the `componentWillUnmount` method is called before unmounting it from the DOM
 So `if(loading)`, mount the loading component, once the loading gets set to false, display something else (inside render, it will go into the `else` block) and this will make react unmount the components inside the `if(loading)`
 
 # SHOP
@@ -63,6 +63,7 @@ yarn
 * `<Route>`
 
   * component - component to render for the route
+  * render - can be used instead of component to render some HTML
   * path - URL path (for example. '/' for home) (can have parameters with `:parameterName`, for example `/people/:personId` which would be stored in `props.match.params.personId`)
   * exact - if we have two routes - '/' and '/people', if we go to '/people' in the browser, it will render both (first component for '/' and then component for '/people') if we don't have exact
 
@@ -80,7 +81,7 @@ yarn
 
 * `withRouter()` - wrapper for component (usage: `export default withRouter(ComponentName);`) that gives it access to things like `history`
 
-## Firebase
+## [Firebase](https://console.firebase.google.com/)
 
 On the bottom left, we have a [plan](https://firebase.google.com/pricing) (free by default).
 
@@ -395,7 +396,7 @@ const mapStateToProps = ({ cart: { cartItems } }) => ({
 });
 ```
 
-The example above will re-render the component every time anything changes in the global state. In order to not re-render everything if we assign some values which didn't change, but Redux thinks they did, we need to use memoization. There is a library called `reselect` which will help us achieve that and extract our `mapStateToProps` logic code into something reusable.
+The example above will re-render the component every time anything changes in the global state. In order to not re-render everything if we assign some values which didn't change, but Redux thinks they did, we need to use `memoization`. There is a library called `reselect` which will help us achieve that and extract our `mapStateToProps` logic code into something reusable.
 
 `yarn add reselect`
 
@@ -1687,13 +1688,13 @@ export default ErrorBoundary;
       * `const compression = require('compression');`
       * `app.use(compression());`
 * For testing components, we can wrap them in `Profiler` component that takes in properties `id` which is used for identifying which profiler is logging the data and `onRender` which takes in the following parameters:
-  * id - the "id" prop of the Profiler tree that has just committed
-  * phase - either "mount" (if the tree just mounted) or "update" (if it re-rendered)
-  * actualDuration - time spent rendering the committed update
-  * baseDuration  estimated time to render the entire subtree without memoization
-  * startTime - when React began rendering this update
-  * commitTime - when React committed this update
-  * interaction - the Set of interactions belonging to this update
+  * `id` - the "id" prop of the Profiler tree that has just committed
+  * `phase` - either "mount" (if the tree just mounted) or "update" (if it re-rendered)
+  * `actualDuration` - time spent rendering the committed update
+  * `baseDuration` - estimated time to render the entire subtree without `memoization`
+  * `startTime` - when React began rendering this update
+  * `commitTime` - when React committed this update
+  * `interaction` - the Set of interactions belonging to this update
 * [Cheat sheet](https://houssein.me/progressive-react)
 
 ## Cool Stuff
